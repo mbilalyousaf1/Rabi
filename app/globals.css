@@ -1,26 +1,239 @@
 @import "tailwindcss";
 
 :root {
+  /* Premium Chinese Restaurant Palette */
+  --primary-red: #8b0000;
+  --dark-red: #660000;
+  --gold: #d4af37;
+  --black: #1a1a1a;
+  --warm-cream: #f5f1e8;
+  --light-gold: #f4e4c1;
+  --text-dark: #2c2c2c;
+  --text-light: #6b6b6b;
+
+  /* Background & Surfaces */
   --background: #ffffff;
-  --foreground: #171717;
+  --surface: #faf8f3;
+  --border-light: #e8e3d8;
+
+  /* Spacing */
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2rem;
+  --spacing-xl: 3rem;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-primary: var(--primary-red);
+  --color-gold: var(--gold);
+  --color-black: var(--black);
+  --font-sans: var(--font-poppins);
+  --font-serif: var(--font-playfair);
+  --font-chinese: var(--font-chinese);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--background);
+  color: var(--text-dark);
+  font-family: var(--font-poppins), -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+/* Typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-playfair), serif;
+  font-weight: 700;
+}
+
+h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1.2;
+}
+
+h2 {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  line-height: 1.3;
+}
+
+h3 {
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+}
+
+h4 {
+  font-size: 1.125rem;
+}
+
+p {
+  font-size: 1rem;
+}
+
+/* Accent color for highlights */
+.accent-gold {
+  color: var(--gold);
+}
+
+.accent-red {
+  color: var(--primary-red);
+}
+
+/* Section spacing */
+.section-py {
+  padding-top: var(--spacing-xl);
+  padding-bottom: var(--spacing-xl);
+}
+
+@media (max-width: 768px) {
+  .section-py {
+    padding-top: var(--spacing-lg);
+    padding-bottom: var(--spacing-lg);
+  }
+}
+
+/* Card styling */
+.card {
+  background-color: var(--surface);
+  border-radius: 12px;
+  padding: var(--spacing-lg);
+  border: 1px solid var(--border-light);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 10px 30px rgba(139, 0, 0, 0.1);
+  transform: translateY(-4px);
+}
+
+/* Button base styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.75rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  text-decoration: none;
+  font-family: var(--font-poppins);
+}
+
+.btn-primary {
+  background-color: var(--primary-red);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--dark-red);
+  box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--primary-red);
+  border: 2px solid var(--primary-red);
+}
+
+.btn-secondary:hover {
+  background-color: var(--primary-red);
+  color: white;
+}
+
+.btn-gold {
+  background-color: var(--gold);
+  color: var(--black);
+}
+
+.btn-gold:hover {
+  background-color: #c4941f;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+/* Chinese decorative divider */
+.divider-ornament {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: var(--spacing-lg) 0;
+}
+
+.divider-ornament::before,
+.divider-ornament::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-color: var(--border-light);
+}
+
+.divider-ornament::before {
+  margin-right: var(--spacing-md);
+}
+
+.divider-ornament::after {
+  margin-left: var(--spacing-md);
+}
+
+/* Badge styling */
+.badge {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.badge-spicy {
+  background-color: rgba(139, 0, 0, 0.1);
+  color: var(--primary-red);
+}
+
+.badge-veg {
+  background-color: rgba(34, 139, 34, 0.1);
+  color: #228b22;
+}
+
+/* Smooth scroll behavior */
+@supports (scroll-behavior: smooth) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Print styles */
+@media print {
+  body {
+    background-color: white;
+    color: black;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
