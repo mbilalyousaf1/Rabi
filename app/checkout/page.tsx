@@ -1,20 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { CartItem, useCart } from "../context/CartContext";
+import { useCart } from "../context/CartContext";
 import PageHeader from "../components/PageHeader";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, CreditCard, Truck, ShieldCheck, CheckCircle2, MessageSquare } from "lucide-react";
+import { ChevronLeft, CreditCard, Truck, ShieldCheck, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { siteConfig, whatsappLink } from "@/lib/siteConfig";
 
 export default function CheckoutPage() {
   const { cart, totalPrice, clearCart } = useCart();
   const [isOrdered, setIsOrdered] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [placedOrderId, setPlacedOrderId] = useState("");
-  const [placedItems, setPlacedItems] = useState<CartItem[]>([]);
-  const [placedTotal, setPlacedTotal] = useState(0);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -56,86 +54,60 @@ export default function CheckoutPage() {
     );
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validation
     const errors: Record<string, string> = {};
-    
-    // Email validation
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       errors.email = "Please enter a valid email address.";
     }
 
-    // Pakistan Phone validation (03xx-xxxxxxx or +923xx-xxxxxxx)
     const cleanPhone = formData.phone.replace(/[-\s]/g, "");
-    const pakistanPhoneRegex = /^((\+92)|(0))3\d{9}$/;
-    if (!pakistanPhoneRegex.test(cleanPhone)) {
-      errors.phone = "Invalid Pakistan number. Use 03XXXXXXXXX or +923XXXXXXXXX";
-    }
-
-    // Enforce location
-    if (!coordinates) {
-      errors.location = "Please provide your current location for accurate delivery.";
+    const phoneRegex = /^\+?\d{7,15}$/;
+    if (!phoneRegex.test(cleanPhone)) {
+      errors.phone = "Please enter a valid phone number.";
     }
 
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
-      // Scroll to first error
       const firstError = Object.keys(errors)[0];
       const element = document.getElementById(firstError);
-      element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      element?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
 
     setFormErrors({});
     setIsLoading(true);
 
-    try {
-      const response = await fetch("/api/orders/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customer_name: formData.name,
-          customer_email: formData.email,
-          customer_phone: formData.phone,
-          customer_address: formData.address,
-          notes: formData.notes,
-          coordinates: coordinates ? `${coordinates.lat},${coordinates.lng}` : null,
-          items: cart,
-          total_price: totalPrice,
-        }),
-      });
+    // Static site: send the order straight to the restaurant via WhatsApp.
+    const itemLines = cart
+      .map((item) => `• ${item.name} x${item.quantity} — Rs ${(item.price * item.quantity).toFixed(2)}`)
+      .join("\n");
+    const locationLine = coordinates
+      ? `📍 Location: https://maps.google.com/?q=${coordinates.lat},${coordinates.lng}\n`
+      : "";
 
-      const payload = await response.json();
-      if (!response.ok) {
-        throw new Error(payload.error || "Failed to place order.");
-      }
+    const message =
+      `🥡 *New Order — ${siteConfig.name}* 🥡\n\n` +
+      `*Customer*\n` +
+      `👤 ${formData.name}\n` +
+      `📞 ${formData.phone}\n` +
+      `📧 ${formData.email}\n` +
+      `🏠 ${formData.address}\n` +
+      locationLine +
+      `${formData.notes ? `📝 Notes: ${formData.notes}\n` : ""}` +
+      `\n*Order*\n${itemLines}\n\n` +
+      `*Total: Rs ${totalPrice.toFixed(2)}* (Pay on delivery)`;
 
-      setPlacedOrderId(payload.data?.id || "");
-      setPlacedItems(cart);
-      setPlacedTotal(totalPrice);
-      setIsOrdered(true);
-      clearCart();
+    window.open(whatsappLink(message), "_blank");
 
-      // Save order details for easier tracking if user forgets
-      if (payload.data?.id) {
-        // Handle multiple recent orders in storage
-        const existingOrders = JSON.parse(localStorage.getItem("recentOrderIds") || "[]");
-        const updatedOrders = [payload.data.id, ...existingOrders].slice(0, 5); // Keep last 5
-        localStorage.setItem("recentOrderIds", JSON.stringify(updatedOrders));
-        localStorage.setItem("lastOrderId", payload.data.id); // For legacy/compatibility
-        localStorage.setItem("lastOrderPhone", formData.phone);
-      }
-
-      window.scrollTo(0, 0);
-    } catch (error) {
-      console.error("Error saving order:", error);
-      alert("There was an error placing your order. Please try again or call us.");
-    } finally {
-      setIsLoading(false);
-    }
+    setIsOrdered(true);
+    clearCart();
+    setIsLoading(false);
+    window.scrollTo(0, 0);
   };
 
   if (isOrdered) {
@@ -151,19 +123,20 @@ export default function CheckoutPage() {
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Order Placed!</h1>
           <p className="text-gray-600 mb-8">
-            Thank you for your order, <span className="font-semibold text-gray-900">{formData.name}</span>. 
-            We've received your request and our chefs are starting to prepare your authentic Chinese meal.
+            Thank you, <span className="font-semibold text-gray-900">{formData.name}</span>!
+            Your order has been sent to us on WhatsApp. Please send the pre-filled
+            message to confirm — we&apos;ll call you back to finalise delivery.
           </p>
           <div className="bg-red-50 rounded-2xl p-6 mb-8 text-left">
             <h3 className="font-bold text-red-800 mb-2">What happens next?</h3>
             <ul className="text-sm text-red-700 space-y-2">
               <li className="flex gap-2">
                 <span className="font-bold">•</span>
-                <span>You'll receive a confirmation call shortly.</span>
+                <span>Send the WhatsApp message to confirm your order.</span>
               </li>
               <li className="flex gap-2">
                 <span className="font-bold">•</span>
-                <span>Preparation time: 20-30 minutes.</span>
+                <span>We&apos;ll call to confirm — preparation takes 20-30 minutes.</span>
               </li>
               <li className="flex gap-2">
                 <span className="font-bold">•</span>
@@ -172,26 +145,13 @@ export default function CheckoutPage() {
             </ul>
           </div>
 
-          {placedOrderId && (
-            <div className="bg-gray-50 rounded-2xl p-4 mb-6 border border-gray-200 text-left">
-              <p className="text-xs uppercase tracking-wider text-gray-500">Order ID</p>
-              <p className="text-sm font-bold text-gray-900 break-all">{placedOrderId}</p>
-              <p className="text-xs text-gray-500 mt-1">
-                Save this ID and your phone number to track your order status.
-              </p>
-            </div>
-          )}
-          
           <div className="flex flex-col gap-4">
-            {placedOrderId && (
-              <Link
-                href={`/track-order?orderId=${encodeURIComponent(placedOrderId)}`}
-                className="inline-block w-full bg-red-700 text-white py-4 rounded-xl font-bold hover:bg-red-800 transition"
-              >
-                Track My Order
-              </Link>
-            )}
-            
+            <Link
+              href="/menu"
+              className="inline-block w-full bg-red-700 text-white py-4 rounded-xl font-bold hover:bg-red-800 transition"
+            >
+              Back to Menu
+            </Link>
             <Link
               href="/"
               className="inline-block w-full bg-gray-100 text-gray-700 py-4 rounded-xl font-bold hover:bg-gray-200 transition"

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Menu, X, Phone, UtensilsCrossed, ShoppingBag } from "lucide-react";
 import { useCart } from "../context/CartContext";
+import { siteConfig } from "../../lib/siteConfig";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,7 +15,6 @@ export default function Navbar() {
     { href: "/menu", label: "Menu" },
     { href: "/about", label: "About Us" },
     { href: "/gallery", label: "Gallery" },
-    { href: "/track-order", label: "Track Order" },
     { href: "/contact", label: "Contact" },
   ];
 
@@ -66,7 +66,7 @@ export default function Navbar() {
             </button>
             <div className="h-8 w-px bg-gray-200 mx-1"></div>
             <a
-              href="tel:+1234567890"
+              href={siteConfig.phoneHref}
               className="flex items-center justify-center gap-2 px-5 py-2.5 text-red-700 border-2 border-red-700 rounded-full hover:bg-red-700 hover:text-white transition duration-300 whitespace-nowrap"
             >
               <Phone size={18} />
@@ -116,7 +116,7 @@ export default function Navbar() {
                   View Cart ({totalItems})
                 </button>
                 <a
-                  href="tel:+1234567890"
+                  href={siteConfig.phoneHref}
                   className="flex items-center justify-center gap-2 px-6 py-3 text-red-700 border-2 border-red-700 rounded-full hover:bg-red-700 hover:text-white transition text-sm font-bold whitespace-nowrap"
                 >
                   <Phone size={18} />

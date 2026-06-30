@@ -1,7 +1,5 @@
 "use client";
 
-// Force re-compile to clear stale build errors
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import HeroSection from "./components/HeroSection";
@@ -10,28 +8,11 @@ import ReviewCard from "./components/ReviewCard";
 import SectionDivider from "./components/SectionDivider";
 import CallToAction from "./components/CallToAction";
 import { MapPin, Phone, Clock, ChevronRight } from "lucide-react";
+import { menuItems } from "@/lib/menuData";
+import { siteConfig } from "@/lib/siteConfig";
 
 export default function Home() {
-  const [specialties, setSpecialties] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchSpecialties = async () => {
-      try {
-        const response = await fetch("/api/products", { cache: "no-store" });
-        const payload = await response.json();
-        const items = payload.data || [];
-        // Filter for specialty items
-        const specialtyItems = items.filter((item: any) => item.isSpecialty && item.isAvailable);
-        setSpecialties(specialtyItems);
-      } catch (error) {
-        console.error("Failed to fetch specialties:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchSpecialties();
-  }, []);
+  const specialties = menuItems.filter((item) => item.isSpecialty).slice(0, 4);
 
   const reviews = [
     {
@@ -118,21 +99,11 @@ export default function Home() {
             </p>
           </motion.div>
 
-          {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <div className="w-10 h-10 border-4 border-red-200 border-t-red-700 rounded-full animate-spin"></div>
-            </div>
-          ) : specialties.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-14 md:mb-16">
-              {specialties.slice(0, 4).map((dish, idx) => (
-                <DishCard key={idx} {...dish} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-gray-500">New specialties coming soon!</p>
-            </div>
-          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-14 md:mb-16">
+            {specialties.map((dish) => (
+              <DishCard key={dish.name} {...dish} />
+            ))}
+          </div>
 
           <div className="h-px w-full max-w-xl mx-auto bg-gradient-to-r from-transparent via-red-300 to-transparent mb-8 md:mb-10"></div>
 
@@ -186,15 +157,11 @@ export default function Home() {
               <Clock className="w-12 h-12 text-red-700 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-4">Hours</h3>
               <ul className="space-y-2 text-gray-600">
-                <li>
-                  <span className="font-semibold">Mon - Thu:</span> 11 AM - 10 PM
-                </li>
-                <li>
-                  <span className="font-semibold">Fri - Sat:</span> 11 AM - 11 PM
-                </li>
-                <li>
-                  <span className="font-semibold">Sunday:</span> 12 PM - 10 PM
-                </li>
+                {siteConfig.hours.map((h) => (
+                  <li key={h.day}>
+                    <span className="font-semibold">{h.day}:</span> {h.time}
+                  </li>
+                ))}
               </ul>
             </div>
 
@@ -206,13 +173,13 @@ export default function Home() {
                 <span className="font-semibold">Phone:</span>
               </p>
               <a
-                href="tel:+1234567890"
+                href={siteConfig.phoneHref}
                 className="text-red-700 font-bold text-lg hover:text-red-800"
               >
-                +1 (234) 567-890
+                {siteConfig.phoneDisplay}
               </a>
               <p className="text-gray-600 mt-3 text-sm">
-                <span className="font-semibold">WhatsApp:</span> +1 (234) 567-890
+                <span className="font-semibold">WhatsApp:</span> {siteConfig.phoneDisplay}
               </p>
             </div>
 
@@ -221,11 +188,11 @@ export default function Home() {
               <MapPin className="w-12 h-12 text-red-700 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-4">Location</h3>
               <p className="text-gray-600 mb-4">
-                123 Main Street
+                {siteConfig.address.line1}
                 <br />
-                Downtown District
+                {siteConfig.address.line2}
                 <br />
-                City, State 12345
+                {siteConfig.address.line3}
               </p>
               <Link
                 href="/contact"
@@ -249,7 +216,7 @@ export default function Home() {
 
           <div className="w-full h-96 bg-gray-200 rounded-lg overflow-hidden shadow-lg">
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3024.1234567890!2d-74.0!3d40.7!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDDCsDQyJzI1LjYiTiA3NMKwMDAnNDguMCJX!5e0!3m2!1sen!2sus!4v1234567890"
+              src={siteConfig.mapEmbed}
               width="100%"
               height="100%"
               style={{ border: 0 }}

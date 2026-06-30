@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import SectionDivider from "../components/SectionDivider";
 import PageHeader from "../components/PageHeader";
@@ -8,28 +8,12 @@ import CallToAction from "../components/CallToAction";
 import Lightbox from "../components/Lightbox";
 import { UtensilsCrossed, Home, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
+import { galleryImages } from "@/lib/galleryData";
 
 export default function GalleryPage() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [activeCategory, setActiveCategory] = useState("food");
-  const [galleryItems, setGalleryItems] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchGallery = async () => {
-      try {
-        const response = await fetch("/api/gallery", { cache: "no-store" });
-        const payload = await response.json();
-        setGalleryItems(payload.data || []);
-      } catch (error) {
-        console.error("Failed to load gallery:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchGallery();
-  }, []);
 
   const categories = [
     { id: "food", label: "Food", icon: UtensilsCrossed },
@@ -38,7 +22,7 @@ export default function GalleryPage() {
   ];
 
   // Get current images based on category
-  const currentImages = galleryItems
+  const currentImages = galleryImages
     .filter((item) => item.category === activeCategory)
     .map((item) => item.url);
 
@@ -104,11 +88,7 @@ export default function GalleryPage() {
           </div>
 
           {/* Gallery Grid */}
-          {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <div className="w-10 h-10 border-4 border-red-200 border-t-red-700 rounded-full animate-spin"></div>
-            </div>
-          ) : currentImages.length > 0 ? (
+          {currentImages.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {currentImages.map((image, idx) => (
                 <div

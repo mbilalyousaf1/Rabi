@@ -10,6 +10,7 @@ import {
   Instagram,
   Twitter,
 } from "lucide-react";
+import { siteConfig } from "../../lib/siteConfig";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -65,27 +66,15 @@ export default function Footer() {
               Hours
             </h4>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li className="flex gap-2">
-                <Clock size={16} className="flex-shrink-0 mt-0.5 text-yellow-500" />
-                <div>
-                  <div className="font-semibold text-white">Mon - Thu:</div>
-                  <div>11:00 AM - 10:00 PM</div>
-                </div>
-              </li>
-              <li className="flex gap-2">
-                <Clock size={16} className="flex-shrink-0 mt-0.5 text-yellow-500" />
-                <div>
-                  <div className="font-semibold text-white">Fri - Sat:</div>
-                  <div>11:00 AM - 11:00 PM</div>
-                </div>
-              </li>
-              <li className="flex gap-2">
-                <Clock size={16} className="flex-shrink-0 mt-0.5 text-yellow-500" />
-                <div>
-                  <div className="font-semibold text-white">Sunday:</div>
-                  <div>12:00 PM - 10:00 PM</div>
-                </div>
-              </li>
+              {siteConfig.hours.map((h) => (
+                <li key={h.day} className="flex gap-2">
+                  <Clock size={16} className="flex-shrink-0 mt-0.5 text-yellow-500" />
+                  <div>
+                    <div className="font-semibold text-white">{h.day}:</div>
+                    <div>{h.time}</div>
+                  </div>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -97,22 +86,22 @@ export default function Footer() {
             <ul className="space-y-3 text-sm">
               <li className="flex gap-2 text-gray-400">
                 <Phone size={16} className="flex-shrink-0 mt-0.5 text-yellow-500" />
-                <a href="tel:+1234567890" className="hover:text-yellow-500 transition">
-                  +1 (234) 567-890
+                <a href={siteConfig.phoneHref} className="hover:text-yellow-500 transition">
+                  {siteConfig.phoneDisplay}
                 </a>
               </li>
               <li className="flex gap-2 text-gray-400">
                 <Mail size={16} className="flex-shrink-0 mt-0.5 text-yellow-500" />
                 <a
-                  href="mailto:info@rabiChinese.com"
+                  href={`mailto:${siteConfig.email}`}
                   className="hover:text-yellow-500 transition"
                 >
-                  info@rabiChinese.com
+                  {siteConfig.email}
                 </a>
               </li>
               <li className="flex gap-2 text-gray-400">
                 <MapPin size={16} className="flex-shrink-0 mt-0.5 text-yellow-500" />
-                <span>123 Main St, City, State 12345</span>
+                <span>{`${siteConfig.address.line1}, ${siteConfig.address.line3}`}</span>
               </li>
             </ul>
           </div>
@@ -125,27 +114,27 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           {/* Copyright */}
           <p className="text-gray-400 text-sm">
-            &copy; {currentYear} Rabi Chinese Restaurant. All rights reserved.
+            &copy; {currentYear} {siteConfig.name}. All rights reserved.
           </p>
 
           {/* Social Links */}
           <div className="flex gap-4">
             <a
-              href="#"
+              href={siteConfig.social.facebook}
               className="text-gray-400 hover:text-yellow-500 transition"
               aria-label="Facebook"
             >
               <Facebook size={20} />
             </a>
             <a
-              href="#"
+              href={siteConfig.social.instagram}
               className="text-gray-400 hover:text-yellow-500 transition"
               aria-label="Instagram"
             >
               <Instagram size={20} />
             </a>
             <a
-              href="#"
+              href={siteConfig.social.twitter}
               className="text-gray-400 hover:text-yellow-500 transition"
               aria-label="Twitter"
             >

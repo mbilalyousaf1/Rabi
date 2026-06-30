@@ -6,8 +6,7 @@ import PageHeader from "../components/PageHeader";
 import { Phone, Mail, MapPin, Clock, MessageSquare, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-
-import { supabase } from "@/lib/supabase";
+import { siteConfig, whatsappLink } from "@/lib/siteConfig";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -35,57 +34,37 @@ export default function ContactPage() {
     }));
   };
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-
-    try {
-      const { error } = await supabase.from('reservations').insert([
-        {
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          reservation_date: formData.date,
-          reservation_time: formData.time,
-          guests: parseInt(formData.guests),
-          message: formData.message,
-          status: 'pending',
-        }
-      ]);
-
-      if (error) throw error;
-      setSubmitted(true);
-    } catch (error) {
-      console.error("Error saving reservation:", error);
-      alert("There was an error saving your reservation. Please try again or call us.");
-    } finally {
-      setIsLoading(false);
-    }
+    // Static site: no backend. The reservation is confirmed via WhatsApp below.
+    setSubmitted(true);
+    setIsLoading(false);
   };
 
   const contactMethods = [
     {
       icon: Phone,
       title: "Phone",
-      value: "+1 (234) 567-890",
-      link: "tel:+1234567890",
+      value: siteConfig.phoneDisplay,
+      link: siteConfig.phoneHref,
     },
     {
       icon: Mail,
       title: "Email",
-      value: "info@rabiChinese.com",
-      link: "mailto:info@rabiChinese.com",
+      value: siteConfig.email,
+      link: `mailto:${siteConfig.email}`,
     },
     {
       icon: MessageSquare,
       title: "WhatsApp",
-      value: "+1 (234) 567-890",
-      link: "https://wa.me/1234567890",
+      value: siteConfig.phoneDisplay,
+      link: `https://wa.me/${siteConfig.whatsapp}`,
     },
     {
       icon: MapPin,
       title: "Location",
-      value: "123 Main Street, Downtown District, City, State 12345",
+      value: `${siteConfig.address.line1}, ${siteConfig.address.line2}, ${siteConfig.address.line3}`,
       link: "#map",
     },
   ];
@@ -172,7 +151,7 @@ export default function ContactPage() {
                   <div className="space-y-3">
                     <p className="text-xs text-green-700 font-medium uppercase tracking-wider">Recommended Action</p>
                     <a
-                      href={`https://wa.me/1234567890?text=${encodeURIComponent(
+                      href={whatsappLink(
                         `🪑 *New Table Reservation* 🪑\n\n` +
                         `*Customer Details:*\n` +
                         `👤 Name: ${formData.name}\n` +
@@ -184,7 +163,7 @@ export default function ContactPage() {
                         `👥 Guests: ${formData.guests}\n` +
                         `${formData.message ? `📝 Special Requests: ${formData.message}\n` : ""}\n` +
                         `Please confirm if this table is available!`
-                      )}`}
+                      )}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center justify-center gap-2 w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition shadow-lg shadow-green-600/20"
@@ -340,22 +319,12 @@ export default function ContactPage() {
                   Operating Hours
                 </h3>
                 <ul className="space-y-3 text-gray-700">
-                  <li className="flex justify-between">
-                    <span className="font-semibold">Monday - Thursday:</span>
-                    <span>11:00 AM - 10:00 PM</span>
-                  </li>
-                  <li className="flex justify-between">
-                    <span className="font-semibold">Friday:</span>
-                    <span>11:00 AM - 11:00 PM</span>
-                  </li>
-                  <li className="flex justify-between">
-                    <span className="font-semibold">Saturday:</span>
-                    <span>11:00 AM - 11:00 PM</span>
-                  </li>
-                  <li className="flex justify-between">
-                    <span className="font-semibold">Sunday:</span>
-                    <span>12:00 PM - 10:00 PM</span>
-                  </li>
+                  {siteConfig.hours.map((h) => (
+                    <li key={h.day} className="flex justify-between">
+                      <span className="font-semibold">{h.day}:</span>
+                      <span>{h.time}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
 
@@ -409,7 +378,7 @@ export default function ContactPage() {
 
           <div className="w-full h-96 bg-gray-200 rounded-lg overflow-hidden shadow-lg">
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3024.1234567890!2d-74.0!3d40.7!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDDCsDQyJzI1LjYiTiA3NMKwMDAnNDguMCJX!5e0!3m2!1sen!2sus!4v1234567890"
+              src={siteConfig.mapEmbed}
               width="100%"
               height="100%"
               style={{ border: 0 }}
@@ -424,11 +393,11 @@ export default function ContactPage() {
               <MapPin className="w-8 h-8 text-red-700 mx-auto mb-3" />
               <h3 className="font-semibold text-gray-900 mb-2">Address</h3>
               <p className="text-gray-600 text-sm">
-                123 Main Street
+                {siteConfig.address.line1}
                 <br />
-                Downtown District
+                {siteConfig.address.line2}
                 <br />
-                City, State 12345
+                {siteConfig.address.line3}
               </p>
             </div>
 
@@ -436,10 +405,10 @@ export default function ContactPage() {
               <Phone className="w-8 h-8 text-red-700 mx-auto mb-3" />
               <h3 className="font-semibold text-gray-900 mb-2">Phone</h3>
               <a
-                href="tel:+1234567890"
+                href={siteConfig.phoneHref}
                 className="text-red-700 font-semibold hover:text-red-800"
               >
-                +1 (234) 567-890
+                {siteConfig.phoneDisplay}
               </a>
             </div>
 
@@ -447,10 +416,10 @@ export default function ContactPage() {
               <Mail className="w-8 h-8 text-red-700 mx-auto mb-3" />
               <h3 className="font-semibold text-gray-900 mb-2">Email</h3>
               <a
-                href="mailto:info@rabiChinese.com"
+                href={`mailto:${siteConfig.email}`}
                 className="text-red-700 font-semibold hover:text-red-800"
               >
-                info@rabiChinese.com
+                {siteConfig.email}
               </a>
             </div>
           </div>

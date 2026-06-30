@@ -1,47 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import DishCard from "../components/DishCard";
 import SectionDivider from "../components/SectionDivider";
 import PageHeader from "../components/PageHeader";
 import CallToAction from "../components/CallToAction";
 import { motion } from "framer-motion";
+import { Leaf, Flame } from "lucide-react";
 import { categories, menuItems } from "@/lib/menuData";
 
 export default function MenuPage() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [filterVeg, setFilterVeg] = useState(false);
   const [filterSpicy, setFilterSpicy] = useState(false);
-  const [menuItems, setMenuItems] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const loadMenu = async () => {
-      try {
-        const response = await fetch("/api/products", {
-          cache: "no-store",
-        });
-        const payload = await response.json();
-        setMenuItems(payload.data || []);
-      } catch (error) {
-        console.error("Failed to load menu:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadMenu();
-  }, []);
-
-  const filteredItems = menuItems.filter((item) => {
-    const categoryMatch =
-      activeCategory === "all" || 
-      (activeCategory === "specialties" ? item.isSpecialty : item.category === activeCategory);
-    const vegMatch = !filterVeg || item.isVegetarian;
-    const spicyMatch = !filterSpicy || item.spiceLevel > 0;
-    const availableMatch = item.isAvailable;
-    return categoryMatch && vegMatch && spicyMatch && availableMatch;
-  });
+  const filteredItems = useMemo(
+    () =>
+      menuItems.filter((item) => {
+        const categoryMatch =
+          activeCategory === "all" ||
+          (activeCategory === "specialties"
+            ? item.isSpecialty
+            : item.category === activeCategory);
+        const vegMatch = !filterVeg || item.isVegetarian;
+        const spicyMatch = !filterSpicy || item.spiceLevel > 0;
+        return categoryMatch && vegMatch && spicyMatch;
+      }),
+    [activeCategory, filterVeg, filterSpicy]
+  );
 
   return (
     <main>
@@ -62,16 +48,17 @@ export default function MenuPage() {
           transition={{ duration: 0.6 }}
           className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
         >
+          {/* Category pills */}
           <div className="mb-8 overflow-x-auto">
-            <div className="flex gap-2 pb-4 px-2 -mx-2">
+            <div className="flex gap-2.5 pb-4 px-2 -mx-2">
               {categories.map((cat) => (
                 <button
                   key={cat.id}
                   onClick={() => setActiveCategory(cat.id)}
-                  className={`px-4 py-2 rounded-full whitespace-nowrap font-semibold transition ${
+                  className={`px-5 py-2.5 rounded-full whitespace-nowrap text-sm font-semibold transition-all duration-300 ${
                     activeCategory === cat.id
-                      ? "bg-red-700 text-white"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                      ? "bg-red-700 text-white shadow-md shadow-red-700/25"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
                   {cat.label}
@@ -80,38 +67,37 @@ export default function MenuPage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-4 mb-10">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={filterVeg}
-                onChange={(e) => setFilterVeg(e.target.checked)}
-                className="w-4 h-4 rounded accent-red-700"
-              />
-              <span className="text-gray-700 font-medium">Vegetarian Only</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={filterSpicy}
-                onChange={(e) => setFilterSpicy(e.target.checked)}
-                className="w-4 h-4 rounded accent-red-700"
-              />
-              <span className="text-gray-700 font-medium">Spicy Dishes</span>
-            </label>
+          {/* Dietary filters */}
+          <div className="flex flex-wrap items-center gap-3 mb-10">
+            <button
+              onClick={() => setFilterVeg((v) => !v)}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border transition-all ${
+                filterVeg
+                  ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
+                  : "bg-white text-gray-600 border-gray-200 hover:border-emerald-400"
+              }`}
+            >
+              <Leaf size={16} /> Vegetarian
+            </button>
+            <button
+              onClick={() => setFilterSpicy((v) => !v)}
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border transition-all ${
+                filterSpicy
+                  ? "bg-red-700 text-white border-red-700 shadow-sm"
+                  : "bg-white text-gray-600 border-gray-200 hover:border-red-400"
+              }`}
+            >
+              <Flame size={16} /> Spicy
+            </button>
+            <span className="ml-auto text-sm text-gray-400 font-medium">
+              {filteredItems.length} dish{filteredItems.length === 1 ? "" : "es"}
+            </span>
           </div>
 
-          {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <div className="w-10 h-10 border-4 border-red-200 border-t-red-700 rounded-full animate-spin"></div>
-            </div>
-          ) : filteredItems.length > 0 ? (
+          {filteredItems.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredItems.map((item) => (
-                <DishCard
-                  key={item.id}
-                  {...item}
-                />
+                <DishCard key={item.name} {...item} />
               ))}
             </div>
           ) : (
@@ -126,11 +112,11 @@ export default function MenuPage() {
 
       <CallToAction
         title="Ready to Order?"
-        description="Enjoy our delicious dishes at our restaurant or order for delivery"
-        primaryButtonText="Order Now"
-        primaryButtonHref="/menu"
-        secondaryButtonText="Reserve a Table"
-        secondaryButtonHref="/contact"
+        description="Reserve your table or get in touch to enjoy our delicious dishes"
+        primaryButtonText="Reserve a Table"
+        primaryButtonHref="/contact"
+        secondaryButtonText="About Us"
+        secondaryButtonHref="/about"
         backgroundImage="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=1200&h=600&fit=crop"
       />
     </main>

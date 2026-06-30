@@ -73,15 +73,6 @@ export default function DishCard({
             ))}
           </span>
         )}
-        <span
-          className={`badge flex items-center gap-1 text-xs ${
-            isAvailable
-              ? "bg-emerald-100 text-emerald-700"
-              : "bg-rose-100 text-rose-700"
-          }`}
-        >
-          {isAvailable ? "Available" : "Not Available"}
-        </span>
       </div>
 
       {/* Content */}
